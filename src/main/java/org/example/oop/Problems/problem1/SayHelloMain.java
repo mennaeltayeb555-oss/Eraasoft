@@ -1,4 +1,4 @@
-package org.example.oop.task2.problem1;
+package org.example.oop.Problems.problem1;
 
 public class SayHelloMain {
     public static void main(String[] args) {
