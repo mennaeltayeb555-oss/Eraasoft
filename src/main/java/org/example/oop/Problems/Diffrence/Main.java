@@ -1,4 +1,4 @@
-package org.example.oop.task2.Diffrence;
+package org.example.oop.Problems.Diffrence;
 
 import java.util.Scanner;
 

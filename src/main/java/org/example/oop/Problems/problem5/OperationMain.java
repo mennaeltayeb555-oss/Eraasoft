@@ -1,4 +1,4 @@
-package org.example.oop.task2.problem5;
+package org.example.oop.Problems.problem5;
 
 import java.util.Scanner;
 
