@@ -1,5 +1,7 @@
 package org.example.oop.task2.problem2.Problem3;
 
+import org.example.oop.task2.Problem3.SumEven;
+
 import java.util.Scanner;
 
 public class SumEvenMain {
