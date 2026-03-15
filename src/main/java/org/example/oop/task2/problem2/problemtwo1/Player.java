@@ -2,6 +2,7 @@ package org.example.oop.task2.problem2.problemtwo1;
 public class Player {
      private String name;
     private int number;
+
     //setter and getter:
     public void setName(String name){
         if(name.length()>5){
