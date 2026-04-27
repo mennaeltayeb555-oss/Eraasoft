@@ -170,7 +170,6 @@ public class ApplicationServiceImp implements ApplicationService {
     private void deposit() {
         double amount;
         try {
-            // BUG FIX: Original code never read the amount from user (was always 0)
             System.out.println("Enter deposit amount:");
             amount = scanner.nextDouble();
             accountService.deposit(currentAccount, amount);

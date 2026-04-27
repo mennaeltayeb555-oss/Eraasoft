@@ -8,7 +8,8 @@ import org.example.walletsystem.service.ValidationService;
 import java.util.stream.IntStream;
 
 /**
- * Implements the core account operations: signup, login, deposit, withdraw, transfer, change password.
+ * Implements the core account operations: signup, login, deposit, withdraw,
+ *                                       :transfer,change password.
  * Uses EWalletSystem as the in-memory data store (acts as a fake database).
  */
 public class AccountServiceImp implements AccountService {
@@ -124,8 +125,6 @@ public class AccountServiceImp implements AccountService {
 
         account.setPassword(newPass);
     }
-
-    // ─── Private Helper ───────────────────────────────────────────────────────
 
     /**
      * Finds an account in the system by username.
