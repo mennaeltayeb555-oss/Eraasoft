@@ -24,4 +24,6 @@ public interface AccountService {
 
     /** Updates the account password after verifying the old one. */
     void changePassword(Account account, String oldPass, String newPass) throws Exception;
+    void deleteAccount(Account account) throws Exception;
+    void deactivateAccount(Account account) throws Exception;
 }

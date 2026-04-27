@@ -2,6 +2,7 @@ package org.example.walletsystem.service.imp;
 
 import org.example.walletsystem.model.Account;
 import org.example.walletsystem.model.EWalletSystem;
+import org.example.walletsystem.model.Transaction;
 import org.example.walletsystem.service.AccountService;
 import org.example.walletsystem.service.ValidationService;
 
@@ -63,7 +64,19 @@ public class AccountServiceImp implements AccountService {
 
         // Find the account in the system by username
         Account stored = findAccountByUsername(account.getUsername());
+        //check if account is deactivated donot do any operation
+        if (!stored.isActive())
+            throw new Exception("Account is inactive");
+        //store the transaction after deposite
         stored.setBalance(stored.getBalance() + amount);
+        stored.getTransactions().add(
+                new Transaction(
+                        "DEPOSIT",
+                        amount,
+                        stored.getUsername(),
+                        null
+                )
+        );
     }
 
     // ─── Withdraw ─────────────────────────────────────────────────────────────
@@ -75,11 +88,24 @@ public class AccountServiceImp implements AccountService {
 
         Account stored = findAccountByUsername(account.getUsername());
 
+        //check if account is deactivated donot do any operation
+        if (!stored.isActive())
+            throw new Exception("Account is inactive");
+
         // Ensure the account has sufficient funds
         if (stored.getBalance() < amount)
             throw new Exception("Insufficient balance");
+        //stored transaction after withdraw
 
         stored.setBalance(stored.getBalance() - amount);
+        stored.getTransactions().add(
+                new Transaction(
+                        "WITHDRAW",
+                        amount,
+                        stored.getUsername(),
+                        null
+                )
+        );
     }
 
     // ─── Transfer ─────────────────────────────────────────────────────────────
@@ -88,6 +114,10 @@ public class AccountServiceImp implements AccountService {
     public void transfer(Account from, String toUsername, double amount) throws Exception {
         if (from == null)
             throw new Exception("Sender account is null");
+
+        if (!from.isActive())
+            throw new Exception("Your account is inactive");
+
 
         if (amount <= 0)
             throw new Exception("Transfer amount must be greater than 0");
@@ -108,6 +138,16 @@ public class AccountServiceImp implements AccountService {
         // Deduct from sender, add to receiver
         from.setBalance(from.getBalance() - amount);
         to.setBalance(to.getBalance() + amount);
+        //store the transaction
+        Transaction t = new Transaction(
+                "TRANSFER",
+                amount,
+                from.getUsername(),
+                to.getUsername()
+        );
+
+        from.getTransactions().add(t);
+        to.getTransactions().add(t);
     }
 
     // ─── Change Password ──────────────────────────────────────────────────────
@@ -136,5 +176,29 @@ public class AccountServiceImp implements AccountService {
                 .filter(acc -> acc.getUsername().equals(username))
                 .findFirst()
                 .orElseThrow(() -> new Exception("Account not found"));
+    }
+    // ─── deleteAccount ──────────────────────────────────────────────────────
+
+    @Override
+    public void deleteAccount(Account account) throws Exception {
+        if (account == null)
+            throw new Exception("Account is null");
+
+        eWalletSystem.getAccounts()
+                .removeIf(acc -> acc.getUsername().equals(account.getUsername()));
+    }
+    // ─── deactivateAccount ──────────────────────────────────────────────────────
+    @Override
+    public void deactivateAccount(Account account) throws Exception {
+
+        if (account == null)
+            throw new Exception("Account is null");
+
+        Account stored = findAccountByUsername(account.getUsername());
+
+        if (!stored.isActive())
+            throw new Exception("Account already inactive");
+
+        stored.setActive(false);
     }
 }

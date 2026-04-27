@@ -1,6 +1,7 @@
 package org.example.walletsystem.service.imp;
 
 import org.example.walletsystem.model.Account;
+import org.example.walletsystem.model.Transaction;
 import org.example.walletsystem.service.AccountService;
 import org.example.walletsystem.service.ApplicationService;
 
@@ -139,8 +140,8 @@ public class ApplicationServiceImp implements ApplicationService {
 
     private void mainProfile() throws Exception {
         while (true) {
-            System.out.println("\n1. Deposit    2. Withdraw    3. Transfer    4. Show Details    5. Logout");
-
+            System.out.println("\n1. Deposit    2. Withdraw    3. Transfer    4. Show Details    5. Show History  " +
+                    "  6. Delete Account    7. Deactivate Account    8. Logout");
             int choice;
             try {
                 choice = scanner.nextInt();
@@ -155,7 +156,10 @@ public class ApplicationServiceImp implements ApplicationService {
                 case 2 -> withdraw();
                 case 3 -> transfer();
                 case 4 -> showDetails();
-                case 5 -> {
+                case 5 -> showHistory();
+                case 6 -> deleteAccount();
+                case 7 -> deactivateAccount();
+                case 8 -> {
                     System.out.println("Logged out successfully.");
                     currentAccount = null;
                     return;
@@ -223,4 +227,50 @@ public class ApplicationServiceImp implements ApplicationService {
         System.out.println("Balance  : " + currentAccount.getBalance());
         System.out.println("-----------------------------");
     }
+
+    // ─── Show History ─────────────────────────────────────────────────
+    public void showHistory() {
+
+        if (currentAccount.getTransactions().isEmpty()) {
+            System.out.println("No transactions yet");
+            return;
+        }
+
+        for (Transaction t : currentAccount.getTransactions()) {
+            System.out.println(
+                    t.getType() + " | " +
+                            t.getAmount() + " | " +
+                            t.getFrom() +
+                            (t.getTo() != null ? " -> " + t.getTo() : "") +
+                            " | " +
+                            t.getDate().replace("T", " ")
+            );
+        }
+    }
+    // ─── deleteAccount ─────────────────────────────────────────────────
+    public void deleteAccount(){
+        try {
+            accountService.deleteAccount(currentAccount);
+            System.out.println("✅ Account deleted successfully");
+
+            currentAccount = null; // logout
+            start(); // يرجع للمينيو الأساسي
+
+        } catch (Exception e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+    }
+    // ─── deactivate─────────────────────────────────────────────────
+    private void deactivateAccount() {
+        try {
+            accountService.deactivateAccount(currentAccount);
+            System.out.println("⚠️ Account deactivated");
+
+            currentAccount = null; // logout
+
+        } catch (Exception e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+    }
+
 }

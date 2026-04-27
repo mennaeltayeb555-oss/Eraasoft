@@ -1,5 +1,8 @@
 package org.example.walletsystem.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents a user account in the e-wallet system.
  * Stores personal info, credentials, balance, and admin status.
@@ -12,6 +15,7 @@ public class Account {
     private String phoneNumber;
     private int age;
     private boolean isAdmin;
+    private boolean isActive = true;
 
     // ─── Constructors ────────────────────────────────────────────────────────
 
@@ -38,6 +42,9 @@ public class Account {
         this.username = username;
         this.password = password;
     }
+    public boolean isActive() {
+        return isActive;
+    }
 
     // ─── Getters & Setters ───────────────────────────────────────────────────
 
@@ -58,4 +65,13 @@ public class Account {
 
     public boolean isAdmin() { return isAdmin; }
     public void setAdmin(boolean admin) { isAdmin = admin; }
+    private List<Transaction> transactions = new ArrayList<>();
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 }
