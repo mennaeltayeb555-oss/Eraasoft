@@ -3,79 +3,139 @@ package org.example.walletsystem.service.imp;
 import org.example.walletsystem.model.Account;
 import org.example.walletsystem.model.EWalletSystem;
 import org.example.walletsystem.service.AccountService;
+import org.example.walletsystem.service.ValidationService;
 
-import java.util.Scanner;
+import java.util.stream.IntStream;
 
+/**
+ * Implements the core account operations: signup, login, deposit, withdraw, transfer, change password.
+ * Uses EWalletSystem as the in-memory data store (acts as a fake database).
+ */
 public class AccountServiceImp implements AccountService {
 
-    // This object holds all accounts in the system (like a fake database)
-    private static EWalletSystem eWalletSystem = new EWalletSystem();
+    // Shared in-memory data store — holds all accounts
+    private static final EWalletSystem eWalletSystem = new EWalletSystem();
 
-    // ================== SIGNUP ==================
+    // Handles all input validation rules
+    private final ValidationService validationService = new ValidationServiceImp(eWalletSystem);
+
+    // ─── Create Account (Signup) ──────────────────────────────────────────────
+
     @Override
-    public boolean creatAccount(Account account) {
+    public boolean createAccount(Account account) {
+        try {
+            // Validate all fields before adding the account
+            validationService.validateUsername(account.getUsername());
+            validationService.validatePassword(account.getPassword());
+            validationService.validateAge(account.getAge());
+            validationService.validatePhone(account.getPhonenumber());
 
-        // Check if username already exists
-        boolean isAccountExist = eWalletSystem.getAccounts()
-                .stream()
-                .anyMatch(acc -> acc.getUsername().equals(account.getUsername()));
+            eWalletSystem.getAccounts().add(account);
+            return true;
 
-        // If username exists → do not create account
-        if (isAccountExist) {
+        } catch (Exception e) {
+            System.out.println("❌ " + e.getMessage());
             return false;
         }
-
-        // Add new account to the list
-        eWalletSystem.getAccounts().add(account);
-
-        // Account created successfully
-        return true;
     }
 
-    // ================== LOGIN ==================
-    @Override
-    public  Account login(String username, String password) {
+    // ─── Login ────────────────────────────────────────────────────────────────
 
-        // Check if there is an account with SAME username AND password
+    @Override
+    public Account login(String username, String password) {
+        // Search for an account matching BOTH username AND password
         return eWalletSystem.getAccounts()
                 .stream()
                 .filter(acc ->
                         acc.getUsername().equals(username) &&
-                                acc.getPassword().equals(password)
-                )
+                                acc.getPassword().equals(password))
                 .findFirst()
-                .orElse(null);
+                .orElse(null); // Returns null if no match found
     }
-    // ================== deposite ==================
-    @Override
-    public void deposite(Account account, double amount) {
-        // check if amount is valid
-        if (amount <= 0) {
-            System.out.println("Invalid amount");
-            return;
-        }
-        //هنا عايز اتاكد الاول الاكونت ده موجود عندي فعلا ولا لا//
-        // check if amount is multiple of 100
-        if (amount % 100 != 0) {
-            System.out.println("Amount must be 100, 200, 300, ...");
-            return;
-        }
-        // add amount to balance
-        account.setBalance(account.getBalance() + amount);
-    }
-    // ================== withdraw ==================
-    @Override
-    public void withdraw(Account account, double amount) {
-        if(amount<=0){
-            System.out.println("Invalid amount");
-            return;
-        }
-        if (account.getBalance() < amount){
-            System.out.println("your balance not enough");
-            return;
-        }
-        // minus amount of balance
-        account.setBalance(account.getBalance() - amount);
 
+    // ─── Deposit ──────────────────────────────────────────────────────────────
+
+    @Override
+    public void deposit(Account account, double amount) throws Exception {
+        validationService.checkAccountNotNull(account);
+        validationService.validateDepositAmount(amount);
+
+        // Find the account in the system by username
+        Account stored = findAccountByUsername(account.getUsername());
+        stored.setBalance(stored.getBalance() + amount);
+    }
+
+    // ─── Withdraw ─────────────────────────────────────────────────────────────
+
+    @Override
+    public void withdraw(Account account, double amount) throws Exception {
+        validationService.checkAccountNotNull(account);
+        validationService.validateWithdrawAmount(amount);
+
+        Account stored = findAccountByUsername(account.getUsername());
+
+        // Ensure the account has sufficient funds
+        if (stored.getBalance() < amount)
+            throw new Exception("Insufficient balance");
+
+        stored.setBalance(stored.getBalance() - amount);
+    }
+
+    // ─── Transfer ─────────────────────────────────────────────────────────────
+
+    @Override
+    public void transfer(Account from, String toUsername, double amount) throws Exception {
+        if (from == null)
+            throw new Exception("Sender account is null");
+
+        if (amount <= 0)
+            throw new Exception("Transfer amount must be greater than 0");
+
+        if (from.getUsername().equals(toUsername))
+            throw new Exception("Cannot transfer money to yourself");
+
+        // Look up the recipient account
+        Account to = eWalletSystem.getAccounts()
+                .stream()
+                .filter(acc -> acc.getUsername().equals(toUsername))
+                .findFirst()
+                .orElseThrow(() -> new Exception("Recipient account not found"));
+
+        if (from.getBalance() < amount)
+            throw new Exception("Insufficient balance for transfer");
+
+        // Deduct from sender, add to receiver
+        from.setBalance(from.getBalance() - amount);
+        to.setBalance(to.getBalance() + amount);
+    }
+
+    // ─── Change Password ──────────────────────────────────────────────────────
+
+    @Override
+    public void changePassword(Account account, String oldPass, String newPass) throws Exception {
+        if (!account.getPassword().equals(oldPass))
+            throw new Exception("Old password is incorrect");
+
+        if (oldPass.equals(newPass))
+            throw new Exception("New password must be different from the old one");
+
+        if (newPass.length() < 6)
+            throw new Exception("New password must be at least 6 characters");
+
+        account.setPassword(newPass);
+    }
+
+    // ─── Private Helper ───────────────────────────────────────────────────────
+
+    /**
+     * Finds an account in the system by username.
+     * Throws an exception if the account doesn't exist.
+     */
+    private Account findAccountByUsername(String username) throws Exception {
+        return eWalletSystem.getAccounts()
+                .stream()
+                .filter(acc -> acc.getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new Exception("Account not found"));
     }
 }

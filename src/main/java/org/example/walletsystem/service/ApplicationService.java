@@ -1,5 +1,7 @@
 package org.example.walletsystem.service;
 
 public interface ApplicationService {
-    void start();
+
+    /** Starts the application and shows the main menu. */
+    void start() throws Exception;
 }
