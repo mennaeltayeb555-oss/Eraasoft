@@ -15,6 +15,7 @@ INSERT INTO Employees (EmployeeID, FirstName, LastName, Department, Salary) VALU
 -- Update salary for EmployeeID 101
 UPDATE Employees 
 SET Salary = 600000 
+WHERE EmployeeID = 101;
 - Delete employee with EmployeeID 101
 DELETE FROM Employees 
 WHERE EmployeeID = 101;
