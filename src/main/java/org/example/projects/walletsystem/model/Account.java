@@ -65,9 +65,9 @@ public class Account {
 
     public boolean isAdmin() { return isAdmin; }
     public void setAdmin(boolean admin) { isAdmin = admin; }
-    private List<Transaction> transactions = new ArrayList<>();
+    private List<org.example.walletsystem.model.Transaction> transactions = new ArrayList<>();
 
-    public List<Transaction> getTransactions() {
+    public List<org.example.walletsystem.model.Transaction> getTransactions() {
         return transactions;
     }
 
