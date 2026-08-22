@@ -1,13 +1,16 @@
 package org.example.task1;
 
-public class PersonService implements UserService{
+import org.springframework.stereotype.Component;
+
+@Component("personService")
+public class PersonService implements UserService {
     @Override
     public void save(String name) {
-        System.out.println("Person saved: " + name);
+        System.out.println("PersonService: saving " + name);
     }
 
     @Override
     public void update(String name) {
-        System.out.println("Person updated: " + name);
+        System.out.println("PersonService: updating " + name);
     }
 }
