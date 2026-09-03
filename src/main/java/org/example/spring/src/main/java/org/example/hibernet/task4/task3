@@ -1,0 +1,141 @@
+ Hibernate Relationships
+
+1. Student - Passport
+
+Student → has one Passport
+Passport → belongs to one Student
+
+Relationship: OneToOne
+---------------------------------
+2. Employee - Department
+
+Employee → belongs to one Department
+Department → has many Employees
+
+Relationship: ManyToOne / OneToMany
+---------------------------------
+3. Customer - Order
+
+Customer → has many Orders
+Order → belongs to one Customer
+
+Relationship: OneToMany / ManyToOne
+-----------------------------------
+4. Book - Author
+
+Book → can have many Authors
+Author → can write many Books
+
+Relationship: ManyToMany
+---------------------------------
+5. Teacher - Subject
+
+Teacher → can teach many Subjects
+Subject → can be taught by many Teachers
+
+Relationship: ManyToMany
+---------------------------------
+6. User - Role
+
+User → can have many Roles
+Role → can belong to many Users
+
+Relationship: ManyToMany
+---------------------------------
+7. Course - Student
+
+Course → has many Students
+Student → can enroll in many Courses
+
+Relationship: ManyToMany
+---------------------------------
+8. Library - Book
+
+Library → has many Books
+Book → belongs to one Library
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+9. Doctor - Patient
+
+Doctor → has many Patients
+Patient → belongs to one Doctor
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+10. Product - Category
+
+Product → belongs to one Category
+Category → has many Products
+
+Relationship: ManyToOne / OneToMany
+---------------------------------
+11. Project - Employee
+
+Project → has many Employees
+Employee → can work on many Projects
+
+Relationship: ManyToMany
+---------------------------------
+12. Invoice - Payment
+
+Invoice → has many Payments
+Payment → belongs to one Invoice
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+13. Flight - Ticket
+
+Flight → has many Tickets
+Ticket → belongs to one Flight
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+14. Movie - Actor
+
+Movie → has many Actors
+Actor → can act in many Movies
+
+Relationship: ManyToMany
+---------------------------------
+15. Parent - Child
+
+Parent → has many Children
+Child → belongs to one Parent
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+16. School - Classroom
+
+School → has many Classrooms
+Classroom → belongs to one School
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+17. Driver - Car
+
+Driver → has one Car
+Car → belongs to one Driver
+
+Relationship: OneToOne
+---------------------------------
+18. Hotel - Room
+
+Hotel → has many Rooms
+Room → belongs to one Hotel
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+19. Account - Transaction
+
+Account → has many Transactions
+Transaction → belongs to one Account
+
+Relationship: OneToMany / ManyToOne
+---------------------------------
+20. Country - City
+
+Country → has many Cities
+City → belongs to one Country
+
+Relationship: OneToMany / ManyToOne
