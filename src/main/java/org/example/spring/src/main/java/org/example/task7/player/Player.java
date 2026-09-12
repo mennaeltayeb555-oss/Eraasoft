@@ -1,10 +1,10 @@
-package org.example.task7;
+package org.example.task7.player;
 
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "employees")
-public class Employee {
+@Table(name = "players")
+public class Player {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,18 +12,16 @@ public class Employee {
 
     private String name;
     private Integer age;
-    private String phoneNumber;
+    private String team;
 
-    // Constructors
-    public Employee() {}
+    public Player() {}
 
-    public Employee(String name, Integer age, String phoneNumber) {
+    public Player(String name, Integer age, String team) {
         this.name = name;
         this.age = age;
-        this.phoneNumber = phoneNumber;
+        this.team = team;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -33,6 +31,6 @@ public class Employee {
     public Integer getAge() { return age; }
     public void setAge(Integer age) { this.age = age; }
 
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public String getTeam() { return team; }
+    public void setTeam(String team) { this.team = team; }
 }

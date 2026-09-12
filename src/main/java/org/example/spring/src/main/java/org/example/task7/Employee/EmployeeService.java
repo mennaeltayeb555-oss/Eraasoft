@@ -1,4 +1,4 @@
-package org.example.task7;
+package org.example.task7.Employee;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
