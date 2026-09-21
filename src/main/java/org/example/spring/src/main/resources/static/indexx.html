@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Admin Dashboard</title>
+    <style>
+        :root {
+          --navy-950: #0f2137;
+          --navy-800: #16324f;
+          --navy-700: #1c3f63;
+          --navy-100: #e7edf3;
+          --orange-600: #d9631e;
+          --orange-500: #ef7f2e;
+          --orange-100: #fdeade;
+          --bg: #f4f6f8;
+          --card: #ffffff;
+          --text: #17222e;
+          --text-muted: #5c6b7a;
+          --border: #dfe5ea;
+          --danger: #c0392b;
+          --success: #1e8a5c;
+          --radius: 10px;
+          --shadow: 0 1px 2px rgba(15,33,55,.06), 0 4px 14px rgba(15,33,55,.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+          margin: 0;
+          font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          min-height: 100vh;
+        }
+
+        .app { display: flex; min-height: 100vh; }
+
+        /* ===== Sidebar ===== */
+        .sidebar {
+          width: 240px;
+          flex-shrink: 0;
+          background: linear-gradient(180deg, var(--navy-950), var(--navy-800));
+          color: #fff;
+          padding: 28px 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 0 6px 22px;
+          margin-bottom: 12px;
+          border-bottom: 1px solid rgba(255,255,255,.12);
+        }
+        .brand-mark {
+          width: 34px; height: 34px;
+          border-radius: 9px;
+          background: var(--orange-500);
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 700;
+          color: var(--navy-950);
+          font-size: 15px;
+        }
+        .brand-name { font-weight: 600; font-size: 15px; letter-spacing: .2px; }
+        .brand-sub { font-size: 11.5px; color: rgba(255,255,255,.55); }
+
+        .nav-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 11px 12px;
+          border-radius: 8px;
+          color: rgba(255,255,255,.8);
+          cursor: pointer;
+          font-size: 14px;
+          border: none;
+          background: transparent;
+          text-align: left;
+          width: 100%;
+          transition: background .15s ease, color .15s ease;
+        }
+        .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+        .nav-item.active {
+          background: rgba(239,127,46,.16);
+          color: #fff;
+          box-shadow: inset 3px 0 0 var(--orange-500);
+        }
+        .nav-dot {
+          width: 7px; height: 7px; border-radius: 50%;
+          background: currentColor; opacity: .5; flex-shrink: 0;
+        }
+        .nav-item.active .nav-dot { background: var(--orange-500); opacity: 1; }
+
+        .sidebar-footer {
+          margin-top: auto;
+          font-size: 11.5px;
+          color: rgba(255,255,255,.4);
+          padding: 0 6px;
+        }
+
+        /* ===== Main ===== */
+        .main { flex: 1; min-width: 0; }
+
+        .topbar {
+          background: var(--card);
+          border-bottom: 1px solid var(--border);
+          padding: 16px 32px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+        .topbar h1 { font-size: 18px; margin: 0; font-weight: 650; }
+        .topbar p { margin: 2px 0 0; font-size: 12.5px; color: var(--text-muted); }
+
+        .conn {
+          display: flex; align-items: center; gap: 10px;
+          background: var(--navy-100);
+          border-radius: 999px;
+          padding: 6px 14px 6px 8px;
+        }
+        .conn input {
+          border: none; background: transparent; font-size: 13px;
+          width: 190px; color: var(--navy-950); direction: ltr; text-align: left;
+        }
+        .conn input:focus { outline: none; }
+        .conn-status {
+          width: 9px; height: 9px; border-radius: 50%;
+          background: #b7c1cb; flex-shrink: 0;
+        }
+        .conn-status.ok { background: var(--success); }
+        .conn-status.err { background: var(--danger); }
+        .conn button {
+          border: none; background: var(--navy-800); color: #fff;
+          font-size: 12px; padding: 7px 14px; border-radius: 999px;
+          cursor: pointer; font-weight: 600;
+        }
+
+        .content { padding: 28px 32px 60px; }
+
+        .toast {
+          position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+          background: var(--navy-950); color: #fff; padding: 11px 20px;
+          border-radius: 9px; font-size: 13.5px; box-shadow: var(--shadow);
+          z-index: 100; opacity: 0; pointer-events: none;
+          transition: opacity .2s ease, top .2s ease;
+          border-left: 4px solid var(--orange-500);
+        }
+        .toast.show { opacity: 1; top: 26px; }
+        .toast.error { border-left-color: var(--danger); }
+
+        /* ===== Layout grid: form + table ===== */
+        .grid {
+          display: grid;
+          grid-template-columns: 320px 1fr;
+          gap: 22px;
+          align-items: start;
+        }
+        @media (max-width: 900px) {
+          .grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          box-shadow: var(--shadow);
+        }
+        .card-head {
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--border);
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-head h2 { font-size: 14.5px; margin: 0; font-weight: 650; }
+        .card-body { padding: 18px 20px 20px; }
+
+        .field { margin-bottom: 14px; }
+        .field label {
+          display: block; font-size: 12.5px; font-weight: 600;
+          color: var(--text-muted); margin-bottom: 6px;
+        }
+        .field input, .field select {
+          width: 100%; padding: 9px 11px; border: 1px solid var(--border);
+          border-radius: 7px; font-size: 13.5px; background: #fbfcfd;
+          font-family: inherit;
+        }
+        .field input:focus, .field select:focus {
+          outline: none; border-color: var(--orange-500);
+          box-shadow: 0 0 0 3px rgba(239,127,46,.14);
+          background: #fff;
+        }
+        .field small { display: block; margin-top: 4px; color: #9aa7b3; font-size: 11px; }
+
+        .btn {
+          border: none; border-radius: 7px; padding: 10px 16px;
+          font-size: 13.5px; font-weight: 650; cursor: pointer;
+          transition: filter .15s ease, transform .05s ease;
+          font-family: inherit;
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background: var(--orange-500); color: #fff; }
+        .btn-primary:hover { filter: brightness(1.06); }
+        .btn-secondary { background: var(--navy-100); color: var(--navy-950); }
+        .btn-secondary:hover { filter: brightness(.97); }
+        .btn-block { width: 100%; }
+        .btn-row { display: flex; gap: 8px; }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: 1px dashed var(--border); }
+
+        .email-row {
+          display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px;
+          margin-bottom: 8px; align-items: center;
+        }
+        .email-row input { padding: 8px 9px; font-size: 12.5px; border: 1px solid var(--border); border-radius: 6px; }
+        .icon-btn {
+          border: none; background: var(--orange-100); color: var(--orange-600);
+          width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 15px;
+          display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ===== Table ===== */
+        .table-tools {
+          display: flex; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--border);
+          flex-wrap: wrap; align-items: center;
+        }
+        .table-tools input {
+          flex: 1; min-width: 160px; padding: 8px 12px; border: 1px solid var(--border);
+          border-radius: 7px; font-size: 13px;
+        }
+        .table-tools .btn { padding: 8px 14px; font-size: 12.5px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+          text-align: left; font-size: 11.5px; text-transform: none;
+          color: var(--text-muted); font-weight: 650; padding: 10px 20px;
+          background: #fafbfc; border-bottom: 1px solid var(--border);
+        }
+        tbody td {
+          padding: 12px 20px; font-size: 13.5px; border-bottom: 1px solid #eef1f4;
+          vertical-align: top;
+        }
+        tbody tr:hover { background: #fafbfc; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .pill {
+          display: inline-block; padding: 3px 10px; border-radius: 999px;
+          font-size: 11.5px; font-weight: 600; background: var(--navy-100); color: var(--navy-800);
+        }
+        .email-chip {
+          display: inline-flex; align-items: center; gap: 5px;
+          background: var(--orange-100); color: var(--orange-600);
+          padding: 3px 9px; border-radius: 999px; font-size: 11.5px; margin: 2px 3px 2px 0;
+        }
+        .muted { color: #9aa7b3; font-size: 12.5px; }
+
+        .row-actions { display: flex; gap: 6px; }
+        .row-actions button {
+          border: none; background: none; cursor: pointer; font-size: 12px;
+          color: var(--navy-700); font-weight: 650; padding: 4px 6px; border-radius: 5px;
+        }
+        .row-actions button:hover { background: var(--navy-100); }
+        .row-actions button.del { color: var(--danger); }
+        .row-actions button.del:hover { background: #fbeceb; }
+
+        .empty {
+          padding: 44px 20px; text-align: center; color: #9aa7b3; font-size: 13.5px;
+        }
+
+        .field-error { color: var(--danger); font-size: 11.5px; margin-top: 4px; display: none; }
+        .field.invalid input { border-color: var(--danger); }
+        .field.invalid .field-error { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">HR</div>
+            <div>
+                <div class="brand-name">Employee Panel</div>
+                <div class="brand-sub">Employee &amp; Email API</div>
+            </div>
+        </div>
+
+        <button class="nav-item active" data-tab="employees">
+            <span class="nav-dot"></span> Employees
+        </button>
+        <button class="nav-item" data-tab="emails">
+            <span class="nav-dot"></span> Emails
+        </button>
+
+        <div class="sidebar-footer">Connected to Spring Boot REST API</div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <h1 id="pageTitle">Employees</h1>
+                <p id="pageSub">Create, update, and delete employee records</p>
+            </div>
+            <div class="conn">
+                <span class="conn-status" id="connStatus"></span>
+                <input id="baseUrl" value="/api" spellcheck="false">
+                <button id="connBtn">Connect</button>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- ===================== EMPLOYEES TAB ===================== -->
+            <section id="tab-employees" class="grid">
+                <div class="card">
+                    <div class="card-head">
+                        <h2 id="empFormTitle">Add New Employee</h2>
+                        <button class="btn-ghost btn" id="empResetBtn" style="display:none;">Cancel Edit</button>
+                    </div>
+                    <div class="card-body">
+                        <input type="hidden" id="empId">
+
+                        <div class="field" id="f-empName">
+                            <label>Name</label>
+                            <input id="empName" placeholder="e.g. Ahmed Mohamed">
+                            <div class="field-error">Name is required</div>
+                        </div>
+
+                        <div class="field" id="f-empAge">
+                            <label>Age</label>
+                            <input id="empAge" type="number" placeholder="e.g. 27">
+                            <small>Must be between 15 and 40</small>
+                            <div class="field-error">Age must be between 15 and 40</div>
+                        </div>
+
+                        <div class="field" id="f-empSalary">
+                            <label>Salary</label>
+                            <input id="empSalary" type="number" placeholder="e.g. 7500">
+                            <small>Must be between 5000 and 10000</small>
+                            <div class="field-error">Salary must be between 5000 and 10000</div>
+                        </div>
+
+                        <div class="field" style="margin-bottom:6px;">
+                            <label>Emails (optional when creating)</label>
+                        </div>
+                        <div id="empEmailsWrap"></div>
+                        <button class="btn btn-secondary btn-block" id="addEmailRowBtn" type="button" style="margin-bottom:16px;">+ Add Email</button>
+
+                        <button class="btn btn-primary btn-block" id="empSaveBtn">Save Employee</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-tools">
+                        <input id="empSearch" placeholder="Search by name (exact match, comma-separate for multiple)">
+                        <button class="btn btn-secondary" id="empSearchBtn">Search</button>
+                        <button class="btn btn-ghost" id="empReloadBtn">Reload All</button>
+                    </div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Salary</th>
+                            <th>Emails</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="empTableBody"></tbody>
+                    </table>
+                    <div id="empEmpty" class="empty" style="display:none;">No employees yet</div>
+                </div>
+            </section>
+
+            <!-- ===================== EMAILS TAB ===================== -->
+            <section id="tab-emails" class="grid" style="display:none;">
+                <div class="card">
+                    <div class="card-head">
+                        <h2 id="mailFormTitle">Add Email</h2>
+                        <button class="btn-ghost btn" id="mailResetBtn" style="display:none;">Cancel Edit</button>
+                    </div>
+                    <div class="card-body">
+                        <input type="hidden" id="mailId">
+
+                        <div class="field" id="f-mailName">
+                            <label>Type (name)</label>
+                            <input id="mailName" placeholder="e.g. gmail">
+                            <div class="field-error">Type is required</div>
+                        </div>
+
+                        <div class="field" id="f-mailContent">
+                            <label>Email (content)</label>
+                            <input id="mailContent" placeholder="e.g. eslam@gmail.com">
+                            <div class="field-error">Must be a valid email address</div>
+                        </div>
+
+                        <div class="field">
+                            <label>Linked employee (optional)</label>
+                            <select id="mailEmployeeId">
+                                <option value="">— None —</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" id="mailSaveBtn">Save Email</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-tools">
+                        <input id="mailSearch" placeholder="Search by type or exact content...">
+                        <select id="mailSearchType" style="max-width:130px;">
+                            <option value="name">By type</option>
+                            <option value="content">By content</option>
+                        </select>
+                        <button class="btn btn-secondary" id="mailSearchBtn">Search</button>
+                        <button class="btn btn-ghost" id="mailReloadBtn">Reload All</button>
+                    </div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Type</th>
+                            <th>Email</th>
+                            <th>Employee</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="mailTableBody"></tbody>
+                    </table>
+                    <div id="mailEmpty" class="empty" style="display:none;">No email records yet</div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    (function () {
+      "use strict";
+
+      const els = {
+        baseUrl: document.getElementById('baseUrl'),
+        connStatus: document.getElementById('connStatus'),
+        connBtn: document.getElementById('connBtn'),
+        toast: document.getElementById('toast'),
+        pageTitle: document.getElementById('pageTitle'),
+        pageSub: document.getElementById('pageSub'),
+      };
+
+      let employeesCache = [];
+      let emailsCache = [];
+
+      // ---------- helpers ----------
+      function base() { return els.baseUrl.value.trim().replace(/\/$/, ''); }
+
+      function showToast(msg, isError) {
+        els.toast.textContent = msg;
+        els.toast.classList.toggle('error', !!isError);
+        els.toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => els.toast.classList.remove('show'), 2800);
+      }
+
+      async function api(path, options) {
+        const res = await fetch(base() + path, Object.assign({
+          headers: { 'Content-Type': 'application/json' }
+        }, options));
+
+        let body = null;
+        const text = await res.text();
+        try { body = text ? JSON.parse(text) : null; } catch (e) { body = text; }
+
+        if (!res.ok) {
+          let msg = 'Request failed (' + res.status + ')';
+          if (body) {
+            if (body.message) msg = body.message;
+            else if (body.errors) msg = Object.values(body.errors).join(' — ');
+            else if (typeof body === 'string') msg = body;
+          }
+          const err = new Error(msg);
+          err.status = res.status;
+          err.body = body;
+          throw err;
+        }
+        return body;
+      }
+
+      // ---------- tabs ----------
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const tab = btn.dataset.tab;
+          document.getElementById('tab-employees').style.display = tab === 'employees' ? 'grid' : 'none';
+          document.getElementById('tab-emails').style.display = tab === 'emails' ? 'grid' : 'none';
+          if (tab === 'employees') {
+            els.pageTitle.textContent = 'Employees';
+            els.pageSub.textContent = 'Create, update, and delete employee records';
+          } else {
+            els.pageTitle.textContent = 'Emails';
+            els.pageSub.textContent = 'Manage email addresses linked to employees';
+            loadEmployeeOptions();
+          }
+        });
+      });
+
+      // ---------- connection check ----------
+      async function checkConnection() {
+        try {
+          await api('/employees');
+          els.connStatus.className = 'conn-status ok';
+          showToast('Connected successfully');
+          loadEmployees();
+          loadEmails();
+        } catch (e) {
+          els.connStatus.className = 'conn-status err';
+          showToast('Could not reach the server — check it is running', true);
+        }
+      }
+      els.connBtn.addEventListener('click', checkConnection);
+
+      // ========================================================
+      // EMPLOYEES
+      // ========================================================
+      const empName = document.getElementById('empName');
+      const empAge = document.getElementById('empAge');
+      const empSalary = document.getElementById('empSalary');
+      const empId = document.getElementById('empId');
+      const empFormTitle = document.getElementById('empFormTitle');
+      const empResetBtn = document.getElementById('empResetBtn');
+      const empEmailsWrap = document.getElementById('empEmailsWrap');
+
+      function addEmailRow(name, content) {
+        const row = document.createElement('div');
+        row.className = 'email-row';
+        row.innerHTML =
+          '<input placeholder="Type (gmail..)" class="e-name" value="' + (name || '') + '">' +
+          '<input placeholder="Email" class="e-content" value="' + (content || '') + '">' +
+          '<button type="button" class="icon-btn">&times;</button>';
+        row.querySelector('.icon-btn').addEventListener('click', () => row.remove());
+        empEmailsWrap.appendChild(row);
+      }
+      document.getElementById('addEmailRowBtn').addEventListener('click', () => addEmailRow());
+
+      function clearFieldErrors(prefix) {
+        document.querySelectorAll('#tab-' + prefix + ' .field').forEach(f => f.classList.remove('invalid'));
+      }
+
+      function resetEmployeeForm() {
+        empId.value = '';
+        empName.value = '';
+        empAge.value = '';
+        empSalary.value = '';
+        empEmailsWrap.innerHTML = '';
+        empFormTitle.textContent = 'Add New Employee';
+        empResetBtn.style.display = 'none';
+        clearFieldErrors('employees');
+      }
+      empResetBtn.addEventListener('click', resetEmployeeForm);
+
+      document.getElementById('empSaveBtn').addEventListener('click', async () => {
+        clearFieldErrors('employees');
+
+        const nameVal = empName.value.trim();
+        const ageVal = Number(empAge.value);
+        const salaryVal = Number(empSalary.value);
+
+        let hasError = false;
+        if (!nameVal) { markInvalid('f-empName'); hasError = true; }
+        if (!empAge.value || ageVal <= 15 || ageVal >= 40) { markInvalid('f-empAge'); hasError = true; }
+        if (!empSalary.value || salaryVal <= 5000 || salaryVal >= 10000) { markInvalid('f-empSalary'); hasError = true; }
+        if (hasError) { showToast('Please review the required fields', true); return; }
+
+        const isEdit = !!empId.value;
+        const payload = { name: nameVal, age: ageVal, salary: salaryVal };
+
+        try {
+          if (isEdit) {
+            await api('/employees/' + empId.value, { method: 'PUT', body: JSON.stringify(payload) });
+            showToast('Employee updated');
+          } else {
+            const emailRows = Array.from(empEmailsWrap.querySelectorAll('.email-row'))
+              .map(r => ({ name: r.querySelector('.e-name').value.trim(), content: r.querySelector('.e-content').value.trim() }))
+              .filter(e => e.name || e.content);
+
+            if (emailRows.length > 0) {
+              await api('/employees/with-emails', {
+                method: 'POST',
+                body: JSON.stringify({ employee: payload, emails: emailRows })
+              });
+            } else {
+              await api('/employees', { method: 'POST', body: JSON.stringify(payload) });
+            }
+            showToast('Employee added');
+          }
+          resetEmployeeForm();
+          loadEmployees();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      });
+
+      function markInvalid(id) { document.getElementById(id).classList.add('invalid'); }
+
+      function editEmployee(id) {
+        const emp = employeesCache.find(x => x.id === id);
+        if (!emp) return;
+        empId.value = emp.id;
+        empName.value = emp.name || '';
+        empAge.value = emp.age != null ? emp.age : '';
+        empSalary.value = emp.salary != null ? emp.salary : '';
+        empEmailsWrap.innerHTML = '';
+        empFormTitle.textContent = 'Edit Employee #' + emp.id;
+        empResetBtn.style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      async function deleteEmployee(id) {
+        if (!confirm('Delete this employee? All linked emails will be removed too.')) return;
+        try {
+          await api('/employees/' + id, { method: 'DELETE' });
+          showToast('Employee deleted');
+          loadEmployees();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      }
+
+      function renderEmployees(list) {
+        const tbody = document.getElementById('empTableBody');
+        const empty = document.getElementById('empEmpty');
+        tbody.innerHTML = '';
+        empty.style.display = list.length ? 'none' : 'block';
+
+        list.forEach(emp => {
+          const tr = document.createElement('tr');
+          const emails = (emp.emails || []);
+          const emailsHtml = emails.length
+            ? emails.map(e => '<span class="email-chip">' + escapeHtml(e.name) + ': ' + escapeHtml(e.content) + '</span>').join('')
+            : '<span class="muted">None</span>';
+
+          tr.innerHTML =
+            '<td><span class="pill">#' + emp.id + '</span></td>' +
+            '<td>' + escapeHtml(emp.name) + '</td>' +
+            '<td>' + emp.age + '</td>' +
+            '<td>' + Number(emp.salary).toLocaleString() + '</td>' +
+            '<td>' + emailsHtml + '</td>' +
+            '<td><div class="row-actions">' +
+              '<button class="edit">Edit</button>' +
+              '<button class="del">Delete</button>' +
+            '</div></td>';
+
+          tr.querySelector('.edit').addEventListener('click', () => editEmployee(emp.id));
+          tr.querySelector('.del').addEventListener('click', () => deleteEmployee(emp.id));
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadEmployees() {
+        try {
+          const data = await api('/employees');
+          employeesCache = data || [];
+          renderEmployees(employeesCache);
+          loadEmployeeOptions();
+          els.connStatus.className = 'conn-status ok';
+        } catch (e) {
+          els.connStatus.className = 'conn-status err';
+          showToast(e.message, true);
+        }
+      }
+      document.getElementById('empReloadBtn').addEventListener('click', loadEmployees);
+
+      document.getElementById('empSearchBtn').addEventListener('click', async () => {
+        const q = document.getElementById('empSearch').value.trim();
+        if (!q) { loadEmployees(); return; }
+        const names = q.split(',').map(s => s.trim()).filter(Boolean);
+        try {
+          const params = names.map(n => 'names=' + encodeURIComponent(n)).join('&');
+          const data = await api('/employees/byNames?' + params);
+          renderEmployees(data || []);
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      });
+
+      function loadEmployeeOptions() {
+        const sel = document.getElementById('mailEmployeeId');
+        const current = sel.value;
+        sel.innerHTML = '<option value="">— None —</option>';
+        employeesCache.forEach(emp => {
+          const opt = document.createElement('option');
+          opt.value = emp.id;
+          opt.textContent = '#' + emp.id + ' — ' + emp.name;
+          sel.appendChild(opt);
+        });
+        sel.value = current;
+      }
+
+      // ========================================================
+      // EMAILS
+      // ========================================================
+      const mailId = document.getElementById('mailId');
+      const mailName = document.getElementById('mailName');
+      const mailContent = document.getElementById('mailContent');
+      const mailEmployeeId = document.getElementById('mailEmployeeId');
+      const mailFormTitle = document.getElementById('mailFormTitle');
+      const mailResetBtn = document.getElementById('mailResetBtn');
+
+      const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function resetEmailForm() {
+        mailId.value = '';
+        mailName.value = '';
+        mailContent.value = '';
+        mailEmployeeId.value = '';
+        mailFormTitle.textContent = 'Add Email';
+        mailResetBtn.style.display = 'none';
+        clearFieldErrors('emails');
+      }
+      mailResetBtn.addEventListener('click', resetEmailForm);
+
+      document.getElementById('mailSaveBtn').addEventListener('click', async () => {
+        clearFieldErrors('emails');
+        let hasError = false;
+        if (!mailName.value.trim()) { markInvalid('f-mailName'); hasError = true; }
+        if (!EMAIL_RE.test(mailContent.value.trim())) { markInvalid('f-mailContent'); hasError = true; }
+        if (hasError) { showToast('Please review the required fields', true); return; }
+
+        const payload = {
+          name: mailName.value.trim(),
+          content: mailContent.value.trim(),
+          employeeId: mailEmployeeId.value ? Number(mailEmployeeId.value) : null
+        };
+
+        try {
+          if (mailId.value) {
+            await api('/emails/' + mailId.value, { method: 'PUT', body: JSON.stringify(payload) });
+            showToast('Email updated');
+          } else {
+            await api('/emails', { method: 'POST', body: JSON.stringify(payload) });
+            showToast('Email added');
+          }
+          resetEmailForm();
+          loadEmails();
+          loadEmployees();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      });
+
+      function editEmail(id) {
+        const mail = emailsCache.find(x => x.id === id);
+        if (!mail) return;
+        mailId.value = mail.id;
+        mailName.value = mail.name || '';
+        mailContent.value = mail.content || '';
+        mailEmployeeId.value = mail.employeeId || '';
+        mailFormTitle.textContent = 'Edit Email #' + mail.id;
+        mailResetBtn.style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      async function deleteEmail(id) {
+        if (!confirm('Delete this email?')) return;
+        try {
+          await api('/emails/' + id, { method: 'DELETE' });
+          showToast('Email deleted');
+          loadEmails();
+          loadEmployees();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      }
+
+      function renderEmails(list) {
+        const tbody = document.getElementById('mailTableBody');
+        const empty = document.getElementById('mailEmpty');
+        tbody.innerHTML = '';
+        empty.style.display = list.length ? 'none' : 'block';
+
+        list.forEach(mail => {
+          const emp = employeesCache.find(e => e.id === mail.employeeId);
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td><span class="pill">#' + mail.id + '</span></td>' +
+            '<td>' + escapeHtml(mail.name) + '</td>' +
+            '<td>' + escapeHtml(mail.content) + '</td>' +
+            '<td>' + (emp ? escapeHtml(emp.name) : '<span class="muted">Unlinked</span>') + '</td>' +
+            '<td><div class="row-actions">' +
+              '<button class="edit">Edit</button>' +
+              '<button class="del">Delete</button>' +
+            '</div></td>';
+
+          tr.querySelector('.edit').addEventListener('click', () => editEmail(mail.id));
+          tr.querySelector('.del').addEventListener('click', () => deleteEmail(mail.id));
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadEmails() {
+        try {
+          const data = await api('/emails');
+          emailsCache = data || [];
+          renderEmails(emailsCache);
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      }
+      document.getElementById('mailReloadBtn').addEventListener('click', loadEmails);
+
+      document.getElementById('mailSearchBtn').addEventListener('click', async () => {
+        const q = document.getElementById('mailSearch').value.trim();
+        const type = document.getElementById('mailSearchType').value;
+        if (!q) { loadEmails(); return; }
+        try {
+          if (type === 'name') {
+            const data = await api('/emails/byName?name=' + encodeURIComponent(q));
+            renderEmails(data || []);
+          } else {
+            const data = await api('/emails/byContent?content=' + encodeURIComponent(q));
+            renderEmails(data ? [data] : []);
+          }
+        } catch (e) {
+          showToast(e.message, true);
+          renderEmails([]);
+        }
+      });
+
+      function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // initial load
+      checkConnection();
+    })();
+</script>
+
+</body>
+</html>
