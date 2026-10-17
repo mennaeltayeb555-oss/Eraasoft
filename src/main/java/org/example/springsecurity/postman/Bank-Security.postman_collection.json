@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "Bank Security System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register customer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"fullName\": \"Ahmed Ali\", \"email\": \"ahmed@example.com\", \"password\": \"StrongPass123\", \"phone\": \"01000000000\"}"
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"admin@bank.local\", \"password\": \"ChangeMe123!\"}"
+        }
+      }
+    },
+    {
+      "name": "Current user (Basic Auth)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/auth/me",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "admin@bank.local",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "ChangeMe123!",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create account (Basic Auth)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/accounts",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "admin@bank.local",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "ChangeMe123!",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"accountNumber\": \"ACC-1001\", \"balance\": 1000, \"currency\": \"EGP\", \"customerId\": 1}"
+        }
+      }
+    }
+  ]
+}
